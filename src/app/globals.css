@@ -1,0 +1,1297 @@
+@import "tailwindcss";
+
+@import "tw-animate-css";
+
+@import "shadcn/tailwind.css";
+
+
+
+@custom-variant dark (&:is(.dark *));
+
+
+
+@theme inline {
+
+  --color-background: var(--background);
+
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-sans);
+
+  --font-mono: var(--font-geist-mono);
+
+  --font-heading: var(--font-sans);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  --color-sidebar-accent: var(--sidebar-accent);
+
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
+  --color-sidebar-primary: var(--sidebar-primary);
+
+  --color-sidebar-foreground: var(--sidebar-foreground);
+
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+
+  --color-chart-4: var(--chart-4);
+
+  --color-chart-3: var(--chart-3);
+
+  --color-chart-2: var(--chart-2);
+
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+
+  --color-input: var(--input);
+
+  --color-border: var(--border);
+
+  --color-destructive: var(--destructive);
+
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-accent: var(--accent);
+
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-muted: var(--muted);
+
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-secondary: var(--secondary);
+
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-primary: var(--primary);
+
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-popover: var(--popover);
+
+  --color-card-foreground: var(--card-foreground);
+
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+
+  --radius-md: calc(var(--radius) * 0.8);
+
+  --radius-lg: var(--radius);
+
+  --radius-xl: calc(var(--radius) * 1.4);
+
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  --radius-3xl: calc(var(--radius) * 2.2);
+
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --animate-orbit: orbit calc(var(--duration)*1s) linear infinite;
+
+  @keyframes orbit {
+
+  0% {
+
+    transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg));}
+
+  100% {
+
+    transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px)) rotate(calc((var(--angle) * -1deg) - 360deg));}}
+
+  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+
+  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear
+
+;
+
+  @keyframes shimmer-slide {
+
+  to {
+
+    transform: translate(calc(100cqw - 100%), 0);}}
+
+  @keyframes spin-around {
+
+  0% {
+
+    transform: translateZ(0) rotate(0);}
+
+  15%, 35% {
+
+    transform: translateZ(0) rotate(90deg);}
+
+  65%, 85% {
+
+    transform: translateZ(0) rotate(270deg);}
+
+  100% {
+
+    transform: translateZ(0) rotate(360deg);}}
+
+  --animate-gradient: gradient 8s linear infinite;
+
+  @keyframes gradient {
+
+  to {
+
+    background-position: var(--bg-size, 300%) 0;}}}
+
+
+
+:root {
+
+  --card: oklch(1 0 0);
+
+  --card-foreground: oklch(0.145 0 0);
+
+  --popover: oklch(1 0 0);
+
+  --popover-foreground: oklch(0.145 0 0);
+
+  --primary: oklch(0.205 0 0);
+
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.97 0 0);
+
+  --secondary-foreground: oklch(0.205 0 0);
+
+  --muted: oklch(0.97 0 0);
+
+  --muted-foreground: oklch(0.556 0 0);
+
+  --accent: oklch(0.97 0 0);
+
+  --accent-foreground: oklch(0.205 0 0);
+
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.922 0 0);
+
+  --input: oklch(0.922 0 0);
+
+  --ring: oklch(0.708 0 0);
+
+  --chart-1: oklch(0.87 0 0);
+
+  --chart-2: oklch(0.556 0 0);
+
+  --chart-3: oklch(0.439 0 0);
+
+  --chart-4: oklch(0.371 0 0);
+
+  --chart-5: oklch(0.269 0 0);
+
+  --radius: 0.625rem;
+
+  --sidebar: oklch(0.985 0 0);
+
+  --sidebar-foreground: oklch(0.145 0 0);
+
+  --sidebar-primary: oklch(0.205 0 0);
+
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+
+  --sidebar-accent: oklch(0.97 0 0);
+
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+
+  --sidebar-border: oklch(0.922 0 0);
+
+  --sidebar-ring: oklch(0.708 0 0);
+
+  --background: oklch(1 0 0);
+
+  --foreground: oklch(0.145 0 0);
+
+}
+
+
+
+.dark {
+
+  --background: oklch(0.145 0 0);
+
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.205 0 0);
+
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.205 0 0);
+
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.922 0 0);
+
+  --primary-foreground: oklch(0.205 0 0);
+
+  --secondary: oklch(0.269 0 0);
+
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.269 0 0);
+
+  --muted-foreground: oklch(0.708 0 0);
+
+  --accent: oklch(0.269 0 0);
+
+  --accent-foreground: oklch(0.985 0 0);
+
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: oklch(1 0 0 / 10%);
+
+  --input: oklch(1 0 0 / 15%);
+
+  --ring: oklch(0.556 0 0);
+
+  --chart-1: oklch(0.87 0 0);
+
+  --chart-2: oklch(0.556 0 0);
+
+  --chart-3: oklch(0.439 0 0);
+
+  --chart-4: oklch(0.371 0 0);
+
+  --chart-5: oklch(0.269 0 0);
+
+  --sidebar: oklch(0.205 0 0);
+
+  --sidebar-foreground: oklch(0.985 0 0);
+
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+
+  --sidebar-accent: oklch(0.269 0 0);
+
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+
+  --sidebar-border: oklch(1 0 0 / 10%);
+
+  --sidebar-ring: oklch(0.556 0 0);
+
+}
+
+
+
+@layer base {
+
+  * {
+
+    @apply border-border outline-ring/50;
+
+  }
+
+  body {
+
+    @apply bg-background text-foreground;
+
+  }
+
+  html {
+
+    @apply font-sans;
+
+  }
+
+}
+
+
+
+/* QUNO FOREST LOGIN */
+
+
+
+.forest-login {
+
+  background: #03140d;
+
+  isolation: isolate;
+
+}
+
+
+
+.forest-overlay {
+
+  background:
+
+    linear-gradient(180deg, rgba(1, 13, 8, 0.25), rgba(1, 13, 8, 0.78)),
+
+    radial-gradient(ellipse at 50% 35%, transparent 0%, rgba(0, 10, 5, 0.55) 100%);
+
+}
+
+
+
+.forest-light {
+
+  position: absolute;
+
+  pointer-events: none;
+
+  width: 420px;
+
+  height: 420px;
+
+  border-radius: 50%;
+
+  filter: blur(100px);
+
+  opacity: 0.16;
+
+  animation: forest-breathe 8s ease-in-out infinite alternate;
+
+}
+
+
+
+.forest-light-one {
+
+  top: 5%;
+
+  left: 8%;
+
+  background: #6cff77;
+
+}
+
+
+
+.forest-light-two {
+
+  right: 5%;
+
+  bottom: 5%;
+
+  background: #00d5a0;
+
+  animation-delay: -4s;
+
+}
+
+
+
+@keyframes forest-breathe {
+
+  from {
+
+    transform: scale(0.85);
+
+    opacity: 0.1;
+
+  }
+
+  to {
+
+    transform: scale(1.15);
+
+    opacity: 0.22;
+
+  }
+
+}
+
+
+
+/* Fireflies */
+
+
+
+.fireflies {
+
+  position: absolute;
+
+  inset: 0;
+
+  overflow: hidden;
+
+  pointer-events: none;
+
+}
+
+
+
+.firefly {
+
+  position: absolute;
+
+  width: 4px;
+
+  height: 4px;
+
+  border-radius: 50%;
+
+  background: #d7ff9b;
+
+  box-shadow: 0 0 10px 3px rgba(190, 255, 112, 0.65);
+
+  animation: firefly-float 9s ease-in-out infinite;
+
+}
+
+
+
+@keyframes firefly-float {
+
+  0%, 100% {
+
+    opacity: 0.15;
+
+    transform: translate3d(0, 0, 0);
+
+  }
+
+  50% {
+
+    opacity: 1;
+
+    transform: translate3d(22px, -35px, 0);
+
+  }
+
+}
+
+
+
+/* Electric logo */
+
+
+
+.electric-logo {
+
+  isolation: isolate;
+
+  padding: 15px 30px;
+
+}
+
+
+
+.electric-aura {
+
+  position: absolute;
+
+  inset: 15%;
+
+  border-radius: 50%;
+
+  background: rgba(137, 255, 95, 0.22);
+
+  filter: blur(35px);
+
+  animation: electric-pulse 2.5s ease-in-out infinite;
+
+}
+
+
+
+.electric-ring {
+
+  position: absolute;
+
+  inset: 0;
+
+  border: 1px solid rgba(173, 255, 115, 0.55);
+
+  border-radius: 42%;
+
+  filter: drop-shadow(0 0 7px #8cff65);
+
+  animation: electric-rotate 7s linear infinite;
+
+}
+
+
+
+.electric-ring-one {
+
+  transform: rotate(25deg) scaleY(0.55);
+
+}
+
+
+
+.electric-ring-two {
+
+  transform: rotate(-25deg) scaleY(0.55);
+
+  animation-direction: reverse;
+
+  opacity: 0.65;
+
+}
+
+
+
+@keyframes electric-rotate {
+
+  to {
+
+    rotate: 360deg;
+
+  }
+
+}
+
+
+
+@keyframes electric-pulse {
+
+  50% {
+
+    opacity: 0.5;
+
+    transform: scale(1.2);
+
+  }
+
+}
+
+
+
+/* Orbit labels */
+
+
+
+.orbit-label {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 100%;
+
+  height: 100%;
+
+  border: 1px solid rgba(181, 255, 112, 0.65);
+
+  border-radius: 999px;
+
+  background: rgba(5, 45, 26, 0.85);
+
+  color: #d6ff9b;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  text-shadow: 0 0 10px rgba(183, 255, 102, 0.9);
+
+  box-shadow:
+
+    0 0 12px rgba(143, 255, 89, 0.35),
+
+    inset 0 0 12px rgba(143, 255, 89, 0.12);
+
+}
+
+
+
+.orbit-label-inner {
+
+  color: #8fffe0;
+
+  border-color: rgba(0, 229, 176, 0.55);
+
+}
+
+
+
+/* Inputs */
+
+
+
+.forest-input-wrap {
+
+  display: flex;
+
+  height: 54px;
+
+  align-items: center;
+
+  gap: 12px;
+
+  border: 1px solid rgba(220, 255, 230, 0.14);
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  padding: 0 15px;
+
+  color: rgba(206, 245, 218, 0.55);
+
+  transition: border-color 200ms, *background* 200ms, box-shadow 200ms;
+
+}
+
+
+
+.forest-input-wrap:focus-within {
+
+  border-color: rgba(183, 255, 102, 0.7);
+
+  background: rgba(183, 255, 102, 0.055);
+
+  box-shadow: 0 0 0 3px rgba(183, 255, 102, 0.09);
+
+}
+
+
+
+.forest-input-wrap input {
+
+  width: 100%;
+
+  min-width: 0;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 14px;
+
+}
+
+
+
+.forest-input-wrap input::placeholder {
+
+  color: rgba(220, 245, 230, 0.35);
+
+}
+
+
+
+.password-toggle {
+
+  display: flex;
+
+  flex-shrink: 0;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: rgba(206, 245, 218, 0.55);
+
+  transition: color 200ms;
+
+}
+
+
+
+.password-toggle:hover {
+
+  color: #d6ff9b;
+
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+
+  .forest-light,
+
+  .firefly,
+
+  .electric-ring,
+
+  .electric-aura {
+
+    animation: none;
+
+  }
+
+}
+
+/* =========================================================
+   QUNO SIGNUP PAGE
+   ========================================================= */
+
+.signup-page {
+  position: relative;
+  isolation: isolate;
+  background: #020d08;
+}
+
+.signup-background {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background-image: url("/quno-forest.png");
+  background-position: center;
+  background-size: cover;
+  transform: scale(1.02);
+}
+
+.signup-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2, 12, 7, 0.55),
+      rgba(2, 12, 7, 0.88)
+    ),
+    radial-gradient(
+      ellipse at 50% 15%,
+      rgba(120, 255, 80, 0.12),
+      transparent 55%
+    );
+}
+
+.signup-glow {
+  position: absolute;
+  z-index: -1;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  animation: signup-glow-float 9s ease-in-out infinite alternate;
+}
+
+.signup-glow-one {
+  top: 5%;
+  left: -120px;
+  background: rgba(115, 255, 55, 0.12);
+}
+
+.signup-glow-two {
+  right: -120px;
+  bottom: 5%;
+  background: rgba(0, 220, 145, 0.12);
+  animation-delay: -4s;
+}
+
+@keyframes signup-glow-float {
+  to {
+    transform: translate3d(20px, -25px, 0) scale(1.15);
+  }
+}
+
+/* =========================================================
+   QUNO GOLDEN ORB
+   No dark/black gradient: the complete orb stays yellow.
+   ========================================================= */
+
+.signup-orbit {
+  position: relative;
+  width: 280px;
+  height: 245px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signup-orb-halo {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: rgba(255, 213, 35, 0.62);
+  filter: blur(48px);
+  animation: orb-halo-pulse 3s ease-in-out infinite;
+}
+
+.signup-orb {
+  position: relative;
+  z-index: 2;
+  width: 138px;
+  height: 138px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #fff2a0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    #ffffd1 0%,
+    #fff176 25%,
+    #ffdf45 52%,
+    #ffd02e 76%,
+    #ffc21c 100%
+  );
+  box-shadow:
+    0 0 20px rgba(255, 225, 70, 0.9),
+    0 0 45px rgba(255, 196, 0, 0.7),
+    0 0 85px rgba(255, 174, 0, 0.42);
+  animation: orb-float 5s ease-in-out infinite;
+}
+
+.signup-orb-core {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 225, 0.42),
+    rgba(255, 244, 160, 0.12) 55%,
+    transparent 78%
+  );
+  filter: blur(5px);
+  pointer-events: none;
+}
+
+.signup-center-logo {
+  position: relative;
+  z-index: 3;
+  width: 104px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 5px rgba(120, 80, 0, 0.25));
+}
+
+.signup-orb-highlight {
+  position: absolute;
+  z-index: 2;
+  top: 13px;
+  left: 26px;
+  width: 42px;
+  height: 13px;
+  border-radius: 50%;
+  background: rgba(255, 255, 225, 0.48);
+  filter: blur(7px);
+  pointer-events: none;
+}
+
+@keyframes orb-float {
+  50% {
+    transform: translateY(-6px) scale(1.035);
+  }
+}
+
+@keyframes orb-halo-pulse {
+  50% {
+    opacity: 0.7;
+    transform: scale(1.18);
+  }
+}
+
+/* Floating Quno logos in the background */
+
+.signup-floating-logo {
+  position: absolute;
+  display: flex;
+  width: 66px;
+  height: 66px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(183, 255, 102, 0.4);
+  border-radius: 50%;
+  background: rgba(5, 32, 17, 0.68);
+  box-shadow:
+    0 0 18px rgba(145, 255, 65, 0.22),
+    inset 0 0 12px rgba(145, 255, 65, 0.08);
+  backdrop-filter: blur(8px);
+  opacity: 0.55;
+}
+
+.signup-floating-logo img {
+  filter: drop-shadow(0 0 5px rgba(183, 255, 102, 0.45));
+}
+
+/* Signup card */
+
+.signup-card {
+  background: rgba(5, 19, 12, 0.84);
+  backdrop-filter: blur(22px);
+}
+
+/* Signup inputs */
+
+.signup-input-wrap {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.24);
+  padding: 0 12px;
+  color: rgba(220, 245, 225, 0.5);
+  transition: border-color 200ms, box-shadow 200ms, background 200ms;
+}
+
+.signup-input-wrap:focus-within {
+  border-color: rgba(183, 255, 102, 0.65);
+  background: rgba(183, 255, 102, 0.04);
+  box-shadow: 0 0 0 3px rgba(183, 255, 102, 0.08);
+}
+
+.signup-input-wrap input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: white;
+  font-size: 13px;
+}
+
+.signup-input-wrap input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.signup-eye {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 200ms;
+}
+
+.signup-eye:hover {
+  color: #caff86;
+}
+
+/* Responsive layout */
+
+@media (max-width: 640px) {
+  .signup-floating-logo {
+    width: 48px;
+    height: 48px;
+    opacity: 0.35;
+  }
+
+  .signup-floating-logo img {
+    width: 34px;
+  }
+
+  .signup-orbit {
+    transform: scale(0.9);
+    margin-bottom: -8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .signup-card {
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-glow,
+  .signup-orb,
+  .signup-orb-halo {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   QUNO SCHOOL ONBOARDING FORM
+   ========================================================= */
+
+.onboarding-page {
+  min-height: 100vh;
+  background: #eef1f5;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #202936;
+}
+
+/* A4 Document */
+
+.onboarding-paper {
+  width: 100%;
+  max-width: 850px;
+  min-height: 1123px;
+  margin: 0 auto;
+  padding: 42px 48px;
+  background: #ffffff;
+  box-shadow: 0 12px 45px rgba(15, 23, 42, 0.12);
+  border: 1px solid #e2e8f0;
+}
+
+/* Document Header */
+
+.onboarding-paper header {
+  color: #1e293b;
+}
+
+.onboarding-paper header img {
+  object-fit: contain;
+}
+
+.onboarding-paper header h2 {
+  letter-spacing: 0.7px;
+  font-size: 20px;
+}
+
+.onboarding-paper header p {
+  line-height: 1.65;
+}
+
+/* Section headings */
+
+.onboarding-paper section h3 {
+  color: #172033;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.onboarding-paper section > div:first-child {
+  color: #26364a;
+}
+
+/* Form tables */
+
+.onboarding-table {
+  width: 100%;
+  border: 1px solid #aeb8c5;
+  border-bottom: 0;
+  border-right: 0;
+}
+
+.onboarding-row {
+  display: grid;
+  grid-template-columns: 39% 61%;
+  min-height: 39px;
+  border-bottom: 1px solid #aeb8c5;
+}
+
+.onboarding-row > label {
+  display: flex;
+  align-items: center;
+  padding: 9px 11px;
+  background: #f1f3f6;
+  border-right: 1px solid #aeb8c5;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #263445;
+}
+
+.onboarding-row > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 10px;
+  border-right: 1px solid #aeb8c5;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #283548;
+}
+
+/* Inputs */
+
+.onboarding-row input,
+.onboarding-row textarea,
+.onboarding-row select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #263445;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.onboarding-row input::placeholder,
+.onboarding-row textarea::placeholder {
+  color: #9aa4b2;
+}
+
+.onboarding-row input:focus,
+.onboarding-row textarea:focus,
+.onboarding-row select:focus {
+  color: #111827;
+}
+
+.onboarding-row input[type="date"] {
+  min-height: 25px;
+}
+
+.onboarding-row textarea {
+  padding: 5px 0;
+}
+
+.onboarding-row select {
+  cursor: pointer;
+}
+
+/* Party B fixed information */
+
+.onboarding-row > div.font-semibold {
+  font-weight: 700;
+}
+
+/* Agreement */
+
+.onboarding-paper section.border-y {
+  border-color: #aeb8c5;
+}
+
+.onboarding-paper section.border-y label {
+  cursor: pointer;
+  color: #263445;
+}
+
+.onboarding-paper section.border-y input[type="checkbox"] {
+  accent-color: #246b43;
+  cursor: pointer;
+}
+
+/* Signatures */
+
+.onboarding-paper section.grid > div > div:first-child {
+  border-color: #64748b;
+}
+
+/* Footer */
+
+.onboarding-paper footer {
+  border-color: #aeb8c5;
+}
+
+.onboarding-paper footer p {
+  line-height: 1.6;
+}
+
+/* Toolbar button */
+
+.no-print button {
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+  .onboarding-page {
+    padding: 12px;
+  }
+
+  .onboarding-paper {
+    min-height: auto;
+    padding: 24px 16px;
+  }
+
+  .onboarding-row {
+    grid-template-columns: 40% 60%;
+  }
+
+  .onboarding-row > label {
+    padding: 8px 6px;
+    font-size: 9px;
+  }
+
+  .onboarding-row > div {
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+
+  .onboarding-row input,
+  .onboarding-row textarea,
+  .onboarding-row select {
+    font-size: 9px;
+  }
+
+  .onboarding-paper header h2 {
+    font-size: 16px;
+  }
+}
+
+/* =========================================================
+   PRINT / A4 DOCUMENT
+   ========================================================= */
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .onboarding-page {
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .onboarding-paper {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
+  .onboarding-paper section,
+  .onboarding-paper header,
+  .onboarding-paper footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .onboarding-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .onboarding-row > label {
+    background: #f1f3f6 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .onboarding-row input,
+  .onboarding-row textarea,
+  .onboarding-row select {
+    color: #000000 !important;
+  }
+
+  .onboarding-paper input[type="checkbox"] {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .onboarding-paper footer {
+    break-inside: avoid;
+  }
+}
