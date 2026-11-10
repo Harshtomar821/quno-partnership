@@ -341,81 +341,144 @@ export default function OnboardingWizard() {
     }
   }
 
-  const handleSubmit = async () => {
-    if (isSubmitting || submitted) return
+ 
+const handleSubmit = async () => {
+  if (isSubmitting || submitted) return;
 
-    setIsSubmitting(true)
+  setIsSubmitting(true);
 
-    try {
-      const response = await fetch("/api/schools", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          ...formData,
-          demands,
-        }),
-      })
+  try {
+    const response = await fetch("/api/schools", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        ...formData,
+        demands,
+      }),
+    });
 
-      const result = await response.json().catch(() => ({}))
+    const result = await response.json().catch(() => ({}));
 
-      if (!response.ok || !result.success) {
-        if (result.errors && typeof result.errors === "object") {
-          const apiErrors: Record<string, string> = {}
+    if (!response.ok || !result.success) {
+      const apiErrors: Record<string, string> = {};
 
-          Object.entries(result.errors).forEach(([key, value]) => {
-            apiErrors[key] = String(value)
-          })
+      // Prefer detailed Zod validation errors
+      if (Array.isArray(result.validationErrors)) {
+        result.validationErrors.forEach(
+          (issue: { field?: string; message?: string }) => {
+            if (issue.field && issue.message) {
+              apiErrors[issue.field] = issue.message;
+            }
+          }
+        );
+      }
 
-          setErrors((previous) => ({
-            ...previous,
-            ...apiErrors,
-          }))
+      // Fallback to flattened Zod field errors
+      if (
+        Object.keys(apiErrors).length === 0 &&
+        result.errors &&
+        typeof result.errors === "object"
+      ) {
+        Object.entries(result.errors).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            apiErrors[key] = value.join(", ");
+          } else {
+            apiErrors[key] = String(value);
+          }
+        });
+      }
+
+      if (Object.keys(apiErrors).length > 0) {
+        setErrors((previous) => ({
+          ...previous,
+          ...apiErrors,
+        }));
+
+        // Find the first invalid field
+        const firstErrorField = Object.keys(apiErrors)[0];
+
+        // Find which wizard step contains this field
+        let errorStep = sectionFields.findIndex((fields) =>
+          fields.includes(firstErrorField)
+        );
+
+        // Handle school requirements validation
+        if (firstErrorField === "demands") {
+          errorStep = 5;
         }
 
-        throw new Error(
-          result.message || result.error || "Unable to submit application."
-        )
+        if (errorStep !== -1) {
+          // Navigate from review mode to the invalid step
+          setReviewMode(false);
+          setCurrentStep(errorStep);
+
+          // Scroll to the invalid field after the step renders
+          window.setTimeout(() => {
+            document.getElementById(firstErrorField)?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }, 350);
+        }
+
+        toast.error(
+          `${formatFieldName(firstErrorField)}: ${apiErrors[firstErrorField]}`,
+          { duration: 6000 }
+        );
+
+        return;
       }
 
-      const githubStatus =
-        result.school?.githubStatus ?? result.school?.github?.status
-
-      if (githubStatus === "failed") {
-        toast.success(
-          "Application saved successfully. GitHub sync is pending.",
-          { duration: 5000 }
-        )
-      } else {
-        toast.success("Application submitted successfully!", {
-          duration: 5000,
-        })
-      }
-
-      // Reset the wizard only after the application is saved successfully.
-      setFormData({ ...initialValues })
-      setDemands([])
-      setErrors({})
-      setCurrentStep(0)
-      setReviewMode(false)
-      setSubmitted(false)
-
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    } catch (error) {
-      console.error("School application submission error:", error)
-
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Please try again.",
-        { duration: 5000 }
-      )
-    } finally {
-      setIsSubmitting(false)
+      throw new Error(
+        result.message ||
+          result.error ||
+          "Unable to submit application."
+      );
     }
+
+    const githubStatus =
+      result.school?.githubStatus ?? result.school?.github?.status;
+
+    if (githubStatus === "failed") {
+      toast.success(
+        "Application saved successfully. GitHub sync is pending.",
+        { duration: 5000 }
+      );
+    } else {
+      toast.success("Application submitted successfully!", {
+        duration: 5000,
+      });
+    }
+
+    // Reset only after successful submission
+    setFormData({ ...initialValues });
+    setDemands([]);
+    setErrors({});
+    setCurrentStep(0);
+    setReviewMode(false);
+    setSubmitted(false);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  } catch (error) {
+    console.error("School application submission error:", error);
+
+    toast.error(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong. Please try again.",
+      { duration: 5000 }
+    );
+  } finally {
+    setIsSubmitting(false);
   }
+};
+
 
   const ActiveStep = steps[currentStep].component
 

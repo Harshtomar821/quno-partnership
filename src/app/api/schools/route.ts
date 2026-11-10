@@ -41,17 +41,23 @@ export async function POST(request: Request) {
     const validation = schoolSchema.safeParse(body);
 
     if (!validation.success) {
+      // Return exact field path and validation message
+      const validationErrors = validation.error.issues.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      }));
+
       return NextResponse.json(
         {
           success: false,
-          message: "Please check the application details",
+          message: "Please correct the highlighted fields and try again.",
+          validationErrors,
           errors: validation.error.flatten().fieldErrors,
         },
         { status: 400 }
       );
     }
 
-    // This is now the nested MongoDB-compatible structure
     const schoolData = validation.data;
 
     // 4. Connect to MongoDB
@@ -71,7 +77,8 @@ export async function POST(request: Request) {
       ...schoolData,
       applicationId: school._id.toString(),
       onboardedBy: currentUser.id,
-      submittedAt: school.createdAt?.toISOString() ?? new Date().toISOString(),
+      submittedAt:
+        school.createdAt?.toISOString() ?? new Date().toISOString(),
     };
 
     // 7. Create GitHub branch, JSON file and Pull Request
