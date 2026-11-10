@@ -200,14 +200,56 @@ const sectionFields: Record<number, string[]> = {
 
 function formatFieldName(name: string) {
   return name
+    .replace(/\./g, " ")
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (letter) => letter.toUpperCase())
+    .trim()
+}
+
+function getFieldStep(fieldName: string) {
+  // Exact field match
+  const exactMatch = Object.entries(sectionFields).find(([, fields]) =>
+    fields.includes(fieldName)
+  )
+
+  if (exactMatch) {
+    return Number(exactMatch[0])
+  }
+
+  // Handle nested validation paths such as contact.phone
+  const lastPart = fieldName.split(".").pop() || fieldName
+
+  const nestedMatch = Object.entries(sectionFields).find(([, fields]) =>
+    fields.includes(lastPart)
+  )
+
+  if (nestedMatch) {
+    return Number(nestedMatch[0])
+  }
+
+  // School requirements belong to the final section
+  if (fieldName === "demands") {
+    return 5
+  }
+
+  return -1
+}
+
+function getDisplayFieldName(fieldName: string) {
+  // Resolve nested paths to the actual form field where possible
+  const lastPart = fieldName.split(".").pop() || fieldName
+
+  const allFields = Object.values(sectionFields).flat()
+
+  return allFields.includes(lastPart) ? lastPart : fieldName
 }
 
 export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(0)
+
   const [formData, setFormData] =
-    useState<Record<string, string>>(initialValues)
+    useState<Record<string, string>>({ ...initialValues })
+
   const [demands, setDemands] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [reviewMode, setReviewMode] = useState(false)
@@ -219,21 +261,24 @@ export default function OnboardingWizard() {
     [currentStep]
   )
 
+  // Update field and clear its validation error
   const updateField = (name: string, value: string) => {
     setFormData((previous) => ({
       ...previous,
       [name]: value,
     }))
 
-    if (value.trim()) {
-      setErrors((previous) => {
-        const updated = { ...previous }
-        delete updated[name]
-        return updated
-      })
-    }
+    setErrors((previous) => {
+      if (!(name in previous)) return previous
+
+      const updated = { ...previous }
+      delete updated[name]
+
+      return updated
+    })
   }
 
+  // Update selected school requirements
   const toggleDemand = (value: string) => {
     setDemands((previous) =>
       previous.includes(value)
@@ -244,10 +289,12 @@ export default function OnboardingWizard() {
     setErrors((previous) => {
       const updated = { ...previous }
       delete updated.demands
+
       return updated
     })
   }
 
+  // Validate current wizard section
   const validateCurrentStep = () => {
     const fieldsByStep = [
       [
@@ -292,15 +339,29 @@ export default function OnboardingWizard() {
       newErrors.demands = "Please select at least one school requirement"
     }
 
-    setErrors((previous) => ({
-      ...previous,
-      ...newErrors,
-    }))
+    setErrors((previous) => {
+      const updated = { ...previous }
+
+      // Remove old errors for the current section
+      currentFields.forEach((field) => {
+        delete updated[field]
+      })
+
+      delete updated.demands
+
+      return {
+        ...updated,
+        ...newErrors,
+      }
+    })
 
     const firstError = Object.keys(newErrors)[0]
 
     if (firstError) {
-      toast.error("Please complete all required fields.")
+      toast.error(
+        `${formatFieldName(firstError)}: ${newErrors[firstError]}`,
+        { duration: 5000 }
+      )
 
       requestAnimationFrame(() => {
         document.getElementById(firstError)?.scrollIntoView({
@@ -315,6 +376,7 @@ export default function OnboardingWizard() {
     return true
   }
 
+  // Navigate to next section
   const goNext = () => {
     if (!validateCurrentStep()) return
 
@@ -322,163 +384,199 @@ export default function OnboardingWizard() {
       setCurrentStep((previous) => previous + 1)
     } else {
       setReviewMode(true)
-      toast.success("All sections completed. Please review your application.")
+
+      toast.success(
+        "All sections completed. Please review your application."
+      )
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" })
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
   }
 
+  // Navigate to previous section
   const goBack = () => {
     if (reviewMode) {
       setReviewMode(false)
-      window.scrollTo({ top: 0, behavior: "smooth" })
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+
       return
     }
 
     if (currentStep > 0) {
       setCurrentStep((previous) => previous - 1)
-      window.scrollTo({ top: 0, behavior: "smooth" })
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
     }
   }
 
- 
-const handleSubmit = async () => {
-  if (isSubmitting || submitted) return;
+  // Parse API validation errors
+  const parseApiErrors = (result: Record<string, any>) => {
+    const apiErrors: Record<string, string> = {}
 
-  setIsSubmitting(true);
-
-  try {
-    const response = await fetch("/api/schools", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        ...formData,
-        demands,
-      }),
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok || !result.success) {
-      const apiErrors: Record<string, string> = {};
-
-      // Prefer detailed Zod validation errors
-      if (Array.isArray(result.validationErrors)) {
-        result.validationErrors.forEach(
-          (issue: { field?: string; message?: string }) => {
-            if (issue.field && issue.message) {
-              apiErrors[issue.field] = issue.message;
-            }
+    // Prefer detailed Zod validation errors
+    if (Array.isArray(result.validationErrors)) {
+      result.validationErrors.forEach(
+        (issue: {
+          field?: string
+          message?: string
+        }) => {
+          if (issue.field && issue.message) {
+            apiErrors[issue.field] = issue.message
           }
-        );
-      }
-
-      // Fallback to flattened Zod field errors
-      if (
-        Object.keys(apiErrors).length === 0 &&
-        result.errors &&
-        typeof result.errors === "object"
-      ) {
-        Object.entries(result.errors).forEach(([key, value]) => {
-          if (Array.isArray(value)) {
-            apiErrors[key] = value.join(", ");
-          } else {
-            apiErrors[key] = String(value);
-          }
-        });
-      }
-
-      if (Object.keys(apiErrors).length > 0) {
-        setErrors((previous) => ({
-          ...previous,
-          ...apiErrors,
-        }));
-
-        // Find the first invalid field
-        const firstErrorField = Object.keys(apiErrors)[0];
-
-        // Find which wizard step contains this field
-        let errorStep = sectionFields.findIndex((fields) =>
-          fields.includes(firstErrorField)
-        );
-
-        // Handle school requirements validation
-        if (firstErrorField === "demands") {
-          errorStep = 5;
         }
-
-        if (errorStep !== -1) {
-          // Navigate from review mode to the invalid step
-          setReviewMode(false);
-          setCurrentStep(errorStep);
-
-          // Scroll to the invalid field after the step renders
-          window.setTimeout(() => {
-            document.getElementById(firstErrorField)?.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }, 350);
-        }
-
-        toast.error(
-          `${formatFieldName(firstErrorField)}: ${apiErrors[firstErrorField]}`,
-          { duration: 6000 }
-        );
-
-        return;
-      }
-
-      throw new Error(
-        result.message ||
-          result.error ||
-          "Unable to submit application."
-      );
+      )
     }
 
-    const githubStatus =
-      result.school?.githubStatus ?? result.school?.github?.status;
-
-    if (githubStatus === "failed") {
-      toast.success(
-        "Application saved successfully. GitHub sync is pending.",
-        { duration: 5000 }
-      );
-    } else {
-      toast.success("Application submitted successfully!", {
-        duration: 5000,
-      });
+    // Fallback to flattened Zod field errors
+    if (
+      Object.keys(apiErrors).length === 0 &&
+      result.errors &&
+      typeof result.errors === "object"
+    ) {
+      Object.entries(result.errors).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          apiErrors[key] = value.join(", ")
+        } else if (typeof value === "string") {
+          apiErrors[key] = value
+        } else if (value !== undefined && value !== null) {
+          apiErrors[key] = String(value)
+        }
+      })
     }
 
-    // Reset only after successful submission
-    setFormData({ ...initialValues });
-    setDemands([]);
-    setErrors({});
-    setCurrentStep(0);
-    setReviewMode(false);
-    setSubmitted(false);
+    return apiErrors
+  }
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  } catch (error) {
-    console.error("School application submission error:", error);
+  // Navigate to the first invalid field
+  const navigateToFirstError = (apiErrors: Record<string, string>) => {
+    const firstErrorPath = Object.keys(apiErrors)[0]
+
+    if (!firstErrorPath) return
+
+    const displayField = getDisplayFieldName(firstErrorPath)
+    const errorStep = getFieldStep(firstErrorPath)
+
+    setErrors((previous) => ({
+      ...previous,
+      ...apiErrors,
+      [displayField]: apiErrors[firstErrorPath],
+    }))
+
+    if (errorStep !== -1) {
+      setReviewMode(false)
+      setCurrentStep(errorStep)
+
+      // Wait for section rendering before scrolling and focusing
+      window.setTimeout(() => {
+        const element = document.getElementById(displayField)
+
+        element?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+
+        const input = element?.matches("input, select, textarea")
+          ? element
+          : element?.querySelector("input, select, textarea")
+
+        if (input instanceof HTMLElement) {
+          input.focus({ preventScroll: true })
+        }
+      }, 450)
+    }
 
     toast.error(
-      error instanceof Error
-        ? error.message
-        : "Something went wrong. Please try again.",
-      { duration: 5000 }
-    );
-  } finally {
-    setIsSubmitting(false);
+      `${formatFieldName(displayField)}: ${apiErrors[firstErrorPath]}`,
+      { duration: 6000 }
+    )
   }
-};
 
+  // Submit school application
+  const handleSubmit = async () => {
+    if (isSubmitting || submitted) return
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch("/api/schools", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...formData,
+          demands,
+        }),
+      })
+
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok || !result.success) {
+        const apiErrors = parseApiErrors(result)
+
+        if (Object.keys(apiErrors).length > 0) {
+          navigateToFirstError(apiErrors)
+          return
+        }
+
+        throw new Error(
+          result.message ||
+            result.error ||
+            "Unable to submit application. Please try again."
+        )
+      }
+
+      // Check GitHub integration status
+      const githubStatus =
+        result.school?.githubStatus ?? result.school?.github?.status
+
+      if (githubStatus === "failed") {
+        toast.success(
+          "Application saved successfully. GitHub sync is pending.",
+          { duration: 5000 }
+        )
+      } else {
+        toast.success("Application submitted successfully!", {
+          duration: 5000,
+        })
+      }
+
+      // Reset only after successful MongoDB submission
+      setFormData({ ...initialValues })
+      setDemands([])
+      setErrors({})
+      setCurrentStep(0)
+      setReviewMode(false)
+      setSubmitted(false)
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+    } catch (error) {
+      console.error("School application submission error:", error)
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+        { duration: 5000 }
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const ActiveStep = steps[currentStep].component
 
@@ -536,9 +634,11 @@ const handleSubmit = async () => {
               <p className="text-[11px] font-extrabold tracking-[0.25em] text-[#A3A3A3]">
                 QUNO INDIA
               </p>
+
               <h1 className="mt-1 text-xl font-bold tracking-tight text-[#F5F5F5] sm:text-2xl">
                 School Assessment
               </h1>
+
               <p className="mt-0.5 text-xs text-[#A3A3A3] sm:text-sm">
                 School Partnership & Application Portal
               </p>
@@ -547,6 +647,7 @@ const handleSubmit = async () => {
 
           <div className="flex w-fit items-center gap-2 rounded-full border border-[#454545] bg-[#262626] px-4 py-2.5 shadow-sm">
             <span className="h-2 w-2 rounded-full bg-[#A3A3A3]" />
+
             <span className="text-xs font-semibold text-[#D4D4D4]">
               Detailed Application Form
             </span>
@@ -568,6 +669,7 @@ const handleSubmit = async () => {
               <p className="text-xs font-semibold uppercase tracking-wider text-[#A3A3A3]">
                 Your progress
               </p>
+
               <p className="mt-1 text-sm font-bold text-[#F5F5F5]">
                 {reviewMode
                   ? "Ready for review"
@@ -714,6 +816,7 @@ const handleSubmit = async () => {
                             onClick={() => {
                               setReviewMode(false)
                               setCurrentStep(index)
+
                               window.scrollTo({
                                 top: 0,
                                 behavior: "smooth",
@@ -731,6 +834,7 @@ const handleSubmit = async () => {
                               if (index === 5 && name === "otherDemand") {
                                 return Boolean(formData[name]?.trim())
                               }
+
                               return true
                             })
                             .map((name) => (
@@ -824,6 +928,7 @@ const handleSubmit = async () => {
                   {currentStep === steps.length - 1
                     ? "Review Application"
                     : "Continue"}
+
                   <ArrowRight size={17} className="ml-2" />
                 </ShimmerButton>
               ) : (
@@ -838,7 +943,10 @@ const handleSubmit = async () => {
                 >
                   {isSubmitting ? (
                     <>
-                      <LoaderCircle size={17} className="mr-2 animate-spin" />
+                      <LoaderCircle
+                        size={17}
+                        className="mr-2 animate-spin"
+                      />
                       Submitting...
                     </>
                   ) : submitted ? (
